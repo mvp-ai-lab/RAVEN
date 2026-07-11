@@ -124,7 +124,7 @@ class DiffusionFinetuning(BaseEngine):
 
             if self.engine_config.prepare_before_sync:
                 self.mfu_start.record()
-                seed = self.persistence_config.seed + self.iter // num_sp_groups * world_size + rank
+                seed = self.persistence_config.seed + self.iter * world_size + rank
                 rng = RandomState(seed=seed)
                 batch = self.prepare_before_sync(batch, rng)
 
