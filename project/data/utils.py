@@ -308,7 +308,10 @@ def create_sparse_mask(document_lens, split_lens, attn_modes, device="cpu", sink
         in_sink = kv_non_noise_idx < sink
 
         if window_size is None:
-            in_window = torch.ones(1, dtype=torch.bool, device=device)
+            # 0-dim constant: a shape-(1,) tensor leaks an extra dim through
+            # create_block_mask's vmap (5D mask -> unpack error) on the
+            # torch flex-attention fallback path.
+            in_window = torch.ones((), dtype=torch.bool, device=device)
         else:
             distance = q_non_noise_idx - kv_non_noise_idx
             in_window = distance <= window_size
