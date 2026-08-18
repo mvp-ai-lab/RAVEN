@@ -13,10 +13,9 @@ Project page: <https://yanzuo.lu/raven>
 
 ## Demo
 
-https://github.com/user-attachments/assets/c1aa3b08-4a6e-431f-8b63-d7266774de3b
+https://github.com/user-attachments/assets/96047839-e7cb-4416-a82b-4acb59f8bab3
 
-<!-- Replace the marker below by dragging the MiniMax-H3 comparison video into GitHub's editor. -->
-<!-- MINIMAX_H3_COMPARISON_VIDEO -->
+https://github.com/user-attachments/assets/628a070c-fee5-4b77-97af-5875e79fca1d
 
 ## Repository layout
 
