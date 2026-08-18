@@ -1,5 +1,0 @@
-{
-    "name": "google/umt5-xxl",
-    "seq_len": 512,
-    "clean": "whitespace"
-}

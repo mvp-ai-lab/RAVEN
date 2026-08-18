@@ -1,0 +1,9 @@
+vocab: 256384
+dim: 4096
+dim_attn: 4096
+dim_ffn: 10240
+num_heads: 64
+num_layers: 24
+num_buckets: 32
+shared_pos: false
+dropout: 0.1

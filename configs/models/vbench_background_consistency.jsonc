@@ -1,8 +1,0 @@
-{
-    "fps": null,
-    "num_frames": null,
-    "frame_batch_size": 32,
-    "use_norm": false,
-    "mean": null,
-    "std": null
-}

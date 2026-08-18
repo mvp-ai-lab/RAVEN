@@ -1,0 +1,7 @@
+fps: null
+num_frames: null
+frame_batch_size: 8
+preprocess_mode: longer
+use_norm: false
+mean: null
+std: null

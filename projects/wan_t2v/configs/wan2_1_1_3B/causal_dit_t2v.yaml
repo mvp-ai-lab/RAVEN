@@ -1,0 +1,10 @@
+dim: 1536
+eps: 1.0e-6
+ffn_dim: 8960
+freq_dim: 256
+in_dim: 16
+model_type: t2v
+num_heads: 12
+num_layers: 30
+out_dim: 16
+text_len: 512

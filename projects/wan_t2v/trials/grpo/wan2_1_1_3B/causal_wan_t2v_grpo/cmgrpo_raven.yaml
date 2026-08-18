@@ -1,0 +1,392 @@
+entry:
+  module: engines.grpo
+  class_name: GroupRelativePolicyOptimization
+
+logging:
+  plugins:
+    - module: common.plugin.wandb
+      class_name: WandbPlugin
+      project: group_relative_policy_optimization
+
+validation:
+  validate_ema: true
+  seed: 20001019
+  prompts:
+    - "A person swimming in the ocean, with waves gently crashing around them. The swimmer is fully submerged, with only their head breaking the water's surface, taking deep breaths between strokes. They are wearing a black swimsuit and have wavy, shoulder-length brown hair that floats around their face. The sun is setting, casting a warm golden glow over the water, and the sky is filled with hues of orange and pink. The ocean is vast and serene, with a few seagulls flying overhead. The scene is captured in a medium close-up, focusing on the swimmer's determined facial expressions and fluid arm movements."
+    - "A professional setting where a person is giving a presentation to a room full of colleagues. The presenter stands confidently at the front of the room, holding a laser pointer and gesturing towards a large projection screen displaying slides. They wear a well-fitted suit with a neat tie, exuding professionalism. The audience sits attentively in rows of chairs, some taking notes, others engaged in thoughtful expressions. The room has a modern feel with clean lines, ample lighting, and a professional atmosphere. The camera captures the scene from a medium shot, focusing on the presenter and the audience reaction."
+    - "A person in a cozy kitchen setting is washing dishes at a sink filled with sudsy water. The individual, who appears to be middle-aged with casual attire, is scrubbing a plate with a sponge. Water droplets splash and cling to the dishes as they are washed. The kitchen is warmly lit, with sunlight streaming in from a window nearby. The background shows other kitchen appliances and cabinets. The person is standing with a focused expression, moving the sponge in circular motions across the dish. Medium close-up shot, static scene."
+    - "A person enjoying a juicy burger, with a satisfied smile on their face. They are seated at a casual dining table, surrounded by napkins and a drink. The burger is topped with lettuce, tomato, and cheese, and the person is taking a bite, showcasing the delicious layers inside. The scene has a warm, inviting atmosphere with soft lighting and a cozy background. Medium close-up shot focusing on the person's hand holding the burger and their facial expressions as they savor each bite."
+    - "A lone figure, wearing a heavy winter coat with a fur-lined hood, walks through a dense snowstorm. The person is bundled up with gloves and a scarf wrapped tightly around their face, only their eyes visible. Snowflakes swirl around them as they trudge forward, their footsteps muffled by the thick layer of snow. The background shows a dimly lit forest with tall pine trees barely visible through the heavy snowfall. The scene is captured in a medium shot, focusing on the person's determined walk against the harsh conditions."
+    - "A cozy, warm café setting with soft ambient lighting and wooden furnishings. A young adult, casually dressed in a sweater and jeans, sits at a small round table. They hold a steaming cup of coffee in their hand, taking a sip while looking pensively out the window. The café is moderately busy with other patrons engaged in conversations. The background showcases various coffee drinks and pastries displayed on a counter. The person’s expression is relaxed and content. Medium shot focusing on the person’s face and the coffee cup, capturing the intimate atmosphere of the café."
+    - "A close-up of a young adult playing a classic acoustic guitar, with their fingers deftly plucking the strings. They sit in a cozy, dimly lit room, with soft ambient lighting casting gentle shadows across their face. The person has tousled brown hair, a relaxed expression, and wears a casual outfit consisting of a vintage t-shirt and jeans. Their posture is casual yet focused, leaning slightly forward as they play. The guitar's wooden body reflects the warm glow from a nearby lamp. The scene captures the intimate atmosphere of a musical performance, with the focus on the person's expressive face and skilled hands moving over the fretboard."
+    - "A vintage black bicycle leaning gently against a large, gnarled oak tree in a serene forest clearing. The bicycle has a classic frame with a round handlebar and a single rear mudguard. Its tires are slightly deflated, giving it a slightly neglected yet charming appearance. The tree has lush green leaves and several low branches that gracefully arch over the bike. The forest floor is covered with soft, brown autumn leaves and patches of moss. The scene is bathed in warm, natural sunlight filtering through the canopy, casting dappled shadows. Medium shot capturing the bicycle and the lower part of the tree trunk."
+    - "A bicycle glides smoothly through a vast, snowy field under a clear blue sky. The bicycle has a classic design with black tires, a silver frame, and a small white basket attached to the front. The rider, a young adult wearing a red winter coat, black gloves, and a woolen hat, pedals effortlessly with a slight forward lean. Snowflakes gently fall around them, creating a serene and tranquil atmosphere. The background showcases rolling hills covered in pristine snow, with distant pine trees adding a touch of greenery. The scene is captured in a medium shot, focusing on the bicycle and the rider as they move gracefully across the snowy landscape."
+    - "A cyclist riding a classic black bicycle slows down gradually as they approach a stop sign. The cyclist has a helmet on, and their posture is upright with one hand on the brake handle, applying gentle pressure. The bicycle's wheels spin slightly slower, creating small dust clouds as they decelerate on a gravel path. The surroundings feature a quiet suburban street lined with green trees and parked cars. The scene transitions from a medium shot to a close-up focusing on the cyclist's face, which shows concentration and determination. Static shot, emphasizing the motion of the bicycle slowing down."
+    - "A bicycle accelerating to gain speed, captured in a smooth time-lapse sequence. The bicycle is a classic red road bike with sleek aerodynamic handlebars and reflective wheels. The rider, a focused individual in cycling gear, leans forward, pedaling vigorously. The background shows a winding asphalt road leading into a forest, with trees and bushes blurring past as the bike speeds up. The camera starts from a mid-shot and gradually zooms in to focus on the rider's determined face and the spinning wheels, emphasizing the acceleration."
+    - "A realistic depiction of a car stuck in heavy traffic during rush hour. The scene shows multiple cars lined up on a busy urban highway, each vehicle emitting exhaust fumes. The driver in the front car, a middle-aged man with a stressed expression, is leaning forward in his seat, peering ahead through the windshield. The sun is setting, casting a warm golden glow over the scene. The background features tall buildings and billboards. The camera focuses on the car from a medium shot, capturing the interior and exterior details, emphasizing the stationary nature of the vehicles."
+    - "A sleek, modern sedan driving down a city street, approaching a sharp corner. As the car begins to turn, it smoothly navigates the bend, with the driver maintaining control. The exterior of the vehicle is polished and gleaming, reflecting the surrounding urban environment. In the background, there are tall buildings and street signs, adding to the bustling atmosphere. The scene is captured from a dynamic camera angle that follows the car as it turns, providing a sense of movement and speed. Wide shot, focusing on the car as it makes the turn."
+    - "A sleek, modern sedan gradually slows down as it approaches a stop sign. The car's brake lights illuminate, casting a soft red glow through the rear window. Inside, the driver maintains a calm and focused expression, gently pressing the brake pedal. The wheels slow their rotation, and the vehicle comes to a smooth stop. The background shows a quiet suburban street with a few parked cars and neatly trimmed hedges. The scene is captured from a mid-shot perspective, focusing on the front half of the car."
+    - "A sleek, modern sports car accelerating rapidly down a straight, empty road, gaining speed with each passing second. The car's engine roars as it speeds up, tires leaving occasional smoke trails on the asphalt. The exterior of the car is a shiny metallic silver with minimalistic design elements. The background showcases a scenic countryside with rolling hills and a clear blue sky. The camera follows the car from a slight distance, capturing the intense acceleration and speed from a dynamic tracking shot."
+    - "A sleek black motorcycle cruising along a scenic coastal highway during sunset. The motorcycle has a polished chrome finish and tinted windows on the helmet. The rider, wearing a black leather jacket and jeans, has their hands firmly on the handlebars and is leaning slightly forward, maintaining a steady posture. Waves crash against the rocky shoreline on one side of the highway, while lush green hills roll into the distance on the other. The sky is painted with vibrant hues of orange and pink, casting a warm glow over the entire scene. The camera follows the motorcycle from behind, capturing the wind-swept road and the dramatic coastal landscape in a wide shot."
+  num_frames: 81
+  height: 480
+  width: 832
+  guidance_scale: 3.0
+  fps: 16
+  nrow: 8
+  crf: 18
+
+engine:
+  training_steps: 160
+  # 切片机制收敛（见 engine.py docstring）：
+  #   offline | (group_size x timesteps) 且 ga_steps | (group_size x timesteps // offline)
+  # RAVEN jsonc 的 slices_per_step=2/optim_steps=1 → ga_steps=2/offline=1（N=4 时逐 bit 一致）
+  ga_steps: 2
+  offline: 1
+  seed: 20001019
+  log_interval: 10
+  save_interval: 80
+  save_start_step: 0
+  save_before_train: false
+  val_before_train: false
+  val_interval: 80
+  val_start_step: 0
+  resume: auto
+  clip_grad_norm: 1000.0                 # RAVEN jsonc 未显式设置，沿用 dmd 默认
+  ema_decay:
+    backbone: 0.9675
+  policy_step_models: [backbone]
+  # GRPO 旋钮（对齐 RAVEN cmgrpo_raven_raft0.35ta2aq1iq1ms0.75.jsonc）
+  group_size: 4
+  groups_per_infer: 4
+  reward_aggregation: normalize_then_sum
+  reward_field:
+    raft_RAFT: 0.35
+    videoalign_TA: 2.0
+    aq_AES: 1.0
+    iq_IMG: 1.0
+    ms_MS: 0.75
+  adv_clip_max: 5.0
+  beta: 0.0
+  skip_timesteps: 1
+  policy_loss_scaling: 100.0
+  random_policy_timestep: true
+  per_prompt_stat_tracking: true
+  global_std: false
+  reverse_advantage: false
+  reverse_policy_advantage: false
+  policy_timestep_reweight: false
+
+diffusion:
+  sampling_timesteps:
+    module: common.diffusion.timestep.sampling.trailing
+    class_name: TrailingSamplingTimesteps
+    args:
+      T: 1000
+      num_sampling_steps: 4
+      shift: 5.0
+  schedule:
+    module: common.diffusion.schedule.lerp
+    class_name: LinearInterpolationSchedule
+    args:
+      T: 1000
+      pred_type: v_lerp
+  sampler:
+    module: common.diffusion.sampler.consistency
+    class_name: ConsistencySampler
+    args: {}
+
+persistence:
+  proj_name: group_relative_policy_optimization
+  output_dir: runs/
+  checkpoint:
+    async: false
+    keep_latest_k: 5
+
+data:
+  module: projects.wan_t2v.data.causal_text_only
+  class_name: CausalTextOnlyDataset
+  num_workers: 2
+  prefetch_factor: 2
+  pin_memory: true
+  args:
+    paths:
+      - /root/models/gdhe17/Self-Forcing/vidprom_filtered_extended.txt
+    max_seqlen: 32768
+    max_retries: 5
+    sync_group_size: 8                     # dmd 为 1；RAVEN jsonc 为 8
+    max_seqlen_per_sample: 32768
+    height: 480
+    width: 832
+    num_frames: 81
+    chunk_size: 3
+    independent_first_chunk: 3
+    sink: 0
+    window_size: null
+    separated_first_frame: true
+    patch_size: [1, 2, 2]
+    vae_stride: [4, 8, 8]
+    z_dim: 16
+    video_shape_only: true
+
+meta_model:
+  module: projects.wan_t2v.meta_models.causal_wan_t2v_grpo
+  class_name: CausalWanT2VGRPO
+  dummy_latents: true
+  guidance_min: 3.0
+  guidance_max: 3.0
+  default_neg_prompt: ""                  # GRPO 用空负 prompt（RAVEN jsonc 原值），与 dmd 的长负 prompt 不同
+  chunk_wise_weighting:
+    policy_losses: -1.0
+    kl_losses: -1.0
+  z_dim: 16
+
+models:
+  backbone:
+    module: projects.wan_t2v.modeling.causal_model
+    class_name: CausalWanModel
+    meta_init: true
+    args:
+      __inherit__: projects/wan_t2v/configs/wan2_1_1_3B/causal_dit_t2v.yaml
+      guidance_embeds: false
+    weight:
+      # RAVEN DMD 起点（jsonc 的 states/0000220/models/backbone_ema，即 HF mvp-lab/RAVEN 的 raven_model.pt）
+      path: /root/models/mvp-lab/RAVEN/raven_model.pt
+    runtime:
+      training: true
+      requires_grad: true
+      param_dtype: bfloat16
+      plugins:
+        - module: common.plugin.gradient_checkpointing
+          class_name: NativeGradientCheckpointing
+        - module: common.plugin.autocast
+          class_name: AutocastNoGradWrapper
+          grad_enabled: true
+          autocast:
+            enabled: true
+            dtype: bfloat16
+    placement:
+      weight_dtype: float32
+      fsdp:
+        wrap_modules: [CausalWanAttentionBlock]
+        param_dtype: bfloat16
+        reduce_dtype: float32
+        cast_forward_inputs: false
+        cpu_offload: false
+    # RAVEN jsonc 的 lora section，对应 common 的 PeftLoraAdapter（config key 为 adapter）
+    adapter:
+      r: 256
+      lora_alpha: 256
+      target_modules:
+        - text_embedding.0
+        - text_embedding.2
+        - time_embedding.0
+        - time_embedding.2
+        - time_projection.1
+        - self_attn.q
+        - self_attn.k
+        - self_attn.v
+        - self_attn.o
+        - cross_attn.q
+        - cross_attn.k
+        - cross_attn.v
+        - cross_attn.o
+        - ffn.0
+        - ffn.2
+        - head.head
+    optimizer:
+      - module: torch.optim
+        class_name: AdamW
+        args:
+          lr: 5.0e-6
+          weight_decay: 0.0
+          betas: [0.0, 0.999]
+          eps: 1.0e-10
+          fused: true
+    ema: {}
+
+  # KL 锚点模型：仅 engine.beta > 0 时被 policy_forward 读取（meta_model 里整块
+  # 被 beta > 0 包住）。当前 beta: 0.0，它全程不参与计算却常驻每卡约 0.65 GiB，
+  # 故整段注释掉；要跑 beta > 0 的 KL 消融时取消注释即可。
+  # ref_model:
+  #   module: projects.wan_t2v.modeling.model
+  #   class_name: WanModel
+  #   meta_init: true
+  #   args:
+  #     __inherit__: projects/wan_t2v/configs/wan2_1_1_3B/dit_t2v.yaml
+  #   weight:
+  #     path: /root/models/Wan-AI/Wan2.1-T2V-1.3B/diffusion_pytorch_model.safetensors
+  #   runtime:
+  #     training: false
+  #     requires_grad: false
+  #     param_dtype: bfloat16
+  #     plugins:
+  #       - module: common.plugin.autocast
+  #         class_name: AutocastNoGradWrapper
+  #         grad_enabled: false
+  #         autocast:
+  #           enabled: true
+  #           dtype: bfloat16
+  #   placement:
+  #     weight_dtype: float32
+  #     fsdp:
+  #       wrap_modules: [WanAttentionBlock]
+  #       param_dtype: bfloat16
+  #       reduce_dtype: float32
+  #       cast_forward_inputs: false
+  #       cpu_offload: false
+
+  # 占位 reward 聚合模型：BaseRewardModel 收集所有 reward_model_* 子模型并合并输出字段
+  reward_model:
+    module: modeling.reward_models
+    class_name: BaseRewardModel
+    runtime:
+      training: false
+      requires_grad: false
+
+  reward_model_raft:
+    module: modeling.reward_models.vbench_raft_reward
+    class_name: VBenchRAFTRewardModel
+    meta_init: false                      # 构造函数自建权重壳，非 meta 初始化
+    args:
+      __inherit__: configs/reward_models/vbench_raft.yaml
+    weight:
+      path: /root/models/oliveryanzuolu/vbench/raft_model/models/raft-things.pth
+      # RAFT 的 ResidualBlock 把同一个 BatchNorm 同时挂在 norm3 与 downsample.1 上
+      # （vbench_raft/core/extractor.py:45,104），是真实的模块级共享。RAVEN 一律
+      # strict=False, assign=True 加载（base_engine.py:545 等），解绑后两份副本值相同；
+      # 本模型冻结推理（无梯度、BN eval），解绑无副作用。显式声明以跳过 tied 守卫。
+      assign: true
+    runtime:
+      training: false
+      requires_grad: false
+
+  reward_model_aq:
+    module: modeling.reward_models.vbench_aesthetic_reward
+    class_name: VBenchAestheticRewardModel
+    meta_init: false                      # 构造函数内 clip.load 急切加载权重
+    args:
+      __inherit__: configs/reward_models/vbench_aesthetic.yaml
+      # RAVEN jsonc 的节点级 pretrained_model_name_or_path，对应 from_pretrained 的
+      # clip_model_name_or_path 映射；common 的 DefaultModelInstantiate 不接受节点级
+      # pretrained_model_name_or_path，故放入 args（值为 jsonc 原值）
+      clip_model_name_or_path: /root/models/oliveryanzuolu/vbench/clip_model/ViT-L-14.pt
+    weight:
+      path: /root/models/oliveryanzuolu/vbench/aesthetic_model/emb_reader/sa_0_4_vit_l_14_linear.pth
+    runtime:
+      training: false
+      requires_grad: false
+
+  reward_model_iq:
+    module: modeling.reward_models.vbench_imaging_reward
+    class_name: VBenchImagingRewardModel
+    meta_init: false                      # 构造函数内 MUSIQ 初始化，非 meta 壳
+    args:
+      __inherit__: configs/reward_models/vbench_imaging.yaml
+    weight:
+      path: /root/models/oliveryanzuolu/vbench/pyiqa_model/musiq_spaq_ckpt-358bb6af.pth
+    runtime:
+      training: false
+      requires_grad: false
+
+  reward_model_ms:
+    module: modeling.reward_models.vbench_motion_smoothness_reward
+    class_name: VBenchMotionSmoothnessRewardModel
+    meta_init: false                      # 构造函数内 torch.load(model_path) 急切加载权重
+    args:
+      __inherit__: configs/reward_models/vbench_motion_smoothness.yaml
+      # RAVEN jsonc 的节点级 pretrained_model_name_or_path，对应 from_pretrained 的
+      # model_path 映射；放入 args 原因同 reward_model_aq（值为 jsonc 原值）
+      model_path: /root/models/oliveryanzuolu/vbench/amt_model/amt-s.pth
+    runtime:
+      training: false
+      requires_grad: false
+
+  reward_model_videoalign:
+    module: modeling.reward_models.videoalign
+    class_name: VideoAlignRewardModel
+    meta_init: false                      # 构造函数内 AutoProcessor/get_peft_model，非 meta 壳
+    args:
+      __inherit__: configs/reward_models/videoalign.yaml
+      # RAVEN jsonc 在 __inherit__ 之上覆盖的值（jsonc 原值）
+      base_model_name_or_path: /root/models/Qwen/Qwen2-VL-2B-Instruct
+    weight:
+      path: /root/models/KlingTeam/VideoReward/checkpoint-11352/model.pth
+      # Qwen2-VL-2B-Instruct 的 config.json 为 tie_word_embeddings: true，lm_head.weight
+      # 与 embed_tokens.weight 绑定。同 reward_model_raft：RAVEN 一律 assign=True，
+      # 冻结推理下解绑无副作用。显式声明以跳过 tied 守卫。
+      assign: true
+    runtime:
+      training: false
+      requires_grad: false
+    placement:
+      weight_dtype: bfloat16
+      fsdp:
+        # Qwen2VLRewardModel 语言模型 decoder layer 类名（transformers modeling_qwen2_vl）
+        wrap_modules: [Qwen2VLDecoderLayer]
+        param_dtype: bfloat16
+        reduce_dtype: float32
+        cast_forward_inputs: false
+        # 冻结推理模型，每个 rollout 只在 reward 打分时用一次：常驻显存换 gather 开销
+        cpu_offload: true
+
+  vae:
+    module: projects.wan_t2v.modeling.vae
+    class_name: WanVAE
+    meta_init: false
+    args:
+      __inherit__: projects/wan_t2v/configs/wan2_1_1_3B/vae.yaml
+    weight:
+      path: /root/models/Wan-AI/Wan2.1-T2V-1.3B/Wan2.1_VAE.pth
+    runtime:
+      training: false
+      requires_grad: false
+      param_dtype: bfloat16
+      plugins:
+        - module: common.plugin.autocast
+          class_name: AutocastNoGradWrapper
+          functions: [encode, decode]
+          grad_enabled: false
+          autocast:
+            enabled: true
+            dtype: bfloat16
+    placement:
+      weight_dtype: float32
+
+  tokenizer:
+    module: projects.wan_t2v.modeling.tokenizers
+    class_name: HuggingfaceTokenizer
+    instantiate:
+      module: common.model.instantiate
+      class_name: FromPretrainedInstantiate
+    args:
+      __inherit__: projects/wan_t2v/configs/wan2_1_1_3B/tokenizer.yaml
+      # RAVEN jsonc 的 name 字段（jsonc 原值）
+      pretrained_model_name_or_path: /root/models/Wan-AI/Wan2.1-T2V-1.3B/google/umt5-xxl
+    runtime:
+      training: false
+      requires_grad: false
+    placement:
+      device: cpu
+
+  text_encoder:
+    module: projects.wan_t2v.modeling.t5
+    class_name: T5Encoder
+    meta_init: false
+    args:
+      __inherit__: projects/wan_t2v/configs/wan2_1_1_3B/text_encoder.yaml
+    weight:
+      path: /root/models/Wan-AI/Wan2.1-T2V-1.3B/models_t5_umt5-xxl-enc-bf16.pth
+      assign: true
+    runtime:
+      training: false
+      requires_grad: false
+      param_dtype: bfloat16
+    placement:
+      weight_dtype: bfloat16
+      fsdp:
+        wrap_modules: [T5SelfAttention]
+        param_dtype: bfloat16
+        reduce_dtype: float32
+        # 冻结推理模型，每个 rollout 只在 prepare_inputs 编码 prompt 时用一次
+        cpu_offload: true

@@ -1,0 +1,13 @@
+model_path: null
+fps: 8.0
+num_frames: null
+small: false
+mixed_precision: false
+alternate_corr: false
+flow_iters: 20
+topk_ratio: 0.05
+pair_batch_size: 8
+aggregate: mean
+use_norm: false
+mean: null
+std: null

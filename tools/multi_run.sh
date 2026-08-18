@@ -18,7 +18,6 @@ D=${D:-0}  # debug mode
 export NCCL_DEBUG=INFO
 export NCCL_IB_TIMEOUT=31
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
-export OMP_NUM_THREADS=$(( $(nproc --all) / $N ))
 export TOKENIZERS_PARALLELISM=false
 
 NNODES=${NNODES:-${SLURM_NNODES:-1}}
@@ -53,7 +52,7 @@ if [ $D -eq 0 ]; then
         --rdzv-endpoint $MASTER_ADDR:$MASTER_PORT \
         --rdzv-backend $RDZV_BACKEND \
         --local_addr=$LOCAL_ADDR \
-        main.py --config-file $@
+        -m common.launch --config $@
 else
     DEBUGPY_PORT=${DEBUGPY_PORT:-5678}
     export PYDEVD_WARN_SLOW_RESOLVE_TIMEOUT=30
@@ -63,5 +62,5 @@ else
         --nproc_per_node $D \
         --master-port $MASTER_PORT \
         --monitor-interval 0.1 \
-        main.py --config-file $@
+        -m common.launch --config $@
 fi

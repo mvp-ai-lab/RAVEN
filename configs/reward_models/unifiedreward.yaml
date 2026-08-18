@@ -1,0 +1,24 @@
+# model_name_or_path 不在此声明：__main__ 通过 from_pretrained(args.model_path, **config)
+# 传入，重复声明会撞车；走 build_models 时由 trial yaml 的 args 覆盖（同 reward_model_aq
+# 的 clip_model_name_or_path / reward_model_ms 的 model_path 先例）
+trust_remote_code: false
+torch_dtype: bfloat16
+attn_implementation: null
+padding_side: left
+
+min_pixels: null
+max_pixels: null
+fps: 2.0
+num_frames: null
+
+max_new_tokens: 128
+generation_kwargs:
+  do_sample: false
+strict_parse: false
+parse_default_scores:
+  VQ: 2.5
+  TC: 2.5
+  DD: 2.5
+  TA: 2.5
+  FC: 2.5
+  Overall: 5.0

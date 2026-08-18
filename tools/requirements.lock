@@ -315,7 +315,7 @@ nvidia-nvtx-cu12==12.8.90
     # via cuda-toolkit
 omegaconf==2.3.0
     # via -r tools/requirements.txt
-onnx-weekly==1.22.0.dev20260330
+onnx-weekly==1.23.0.dev20260706
     # via
     #   audio-separator
     #   onnx2torch-py313

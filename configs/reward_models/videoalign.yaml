@@ -1,0 +1,38 @@
+base_model_name_or_path: /root/models/Qwen/Qwen2-VL-2B-Instruct
+model_revision: main
+output_dim: 1
+use_special_tokens: true
+trust_remote_code: false
+torch_dtype: bfloat16
+reward_token: special
+
+max_frame_pixels: 200704
+eval_dim: [VQ, MQ, TA]
+prompt_template_type: detailed_special
+fps: 2.0
+num_frames: null
+sample_type: uniform
+multi_pts_fps: 8.0
+use_norm: true
+
+vq_mean: 3.6757
+vq_std: 2.2476
+mq_mean: 1.1646
+mq_std: 1.3811
+ta_mean: 2.8105
+ta_std: 2.5121
+
+lora_enable: true
+vision_lora: false
+lora_r: 64
+lora_alpha: 128
+lora_dropout: 0.05
+lora_namespan_exclude:
+  - lm_head
+  - rm_head
+  - embed_tokens
+  - visual
+lora_modules_to_save: null
+lora_task_type: CAUSAL_LM
+use_rslora: false
+num_lora_modules: -1

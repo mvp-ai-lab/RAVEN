@@ -1,0 +1,248 @@
+# 100-prompt sampling pass for the released RAVEN CM-GRPO 1.3B checkpoint (val-only, no training).
+#
+# CM-GRPO trains a LoRA on top of the RAVEN DMD model, so the release ships three forms of it:
+# cmgrpo_raven_full.pt (the whole PeftModel state dict, 1437 tensors), cmgrpo_raven_lora
+# .safetensors (adapter only), and cmgrpo_raven_merge.pt (LoRA already folded into the base).
+# This trial uses the merged one -- no adapter block needed, it loads exactly like any other
+# backbone. Verified: 825 tensors, fp32, native CausalWanModel FQNs with no PEFT prefix, key set
+# identical to raven_model.pt, and 519/825 tensors bit-identical to that base while 306 differ --
+# 306 being exactly the number of modules the r=256 LoRA targets, so the fold is intact.
+#
+# NOTE: /root/models/mvp-lab/RAVEN/ on the vr shared disk is an incomplete copy of the HF repo
+# (only raven_model.pt and cmgrpo_raven_full.pt), so the path below points at the merged file
+# where it already exists on disk. The canonical source is `hf download mvp-lab/RAVEN`, which
+# also carries cmgrpo_raven_merge.pt and cmgrpo_raven_lora.safetensors.
+#
+# Pairs with hd0427_grpo_beta0.004_em0.8_iter0160_ema_sample100.yaml (the Hyper-Diffusion GRPO
+# arm) and with raven_sample100.yaml (the pre-GRPO DMD starting point). All three differ ONLY in
+# the backbone weight path, so prompts, seed, sampler, geometry and decode path are held fixed
+# and the per-prompt outputs line up file-for-file (prompt%04d_*.mp4, index = line in the list).
+entry:
+  module: engines.dmd
+  class_name: DistributionMatchingDistillation
+
+logging:
+  plugins:
+    - module: common.plugin.wandb
+      class_name: WandbPlugin
+      project: distribution_matching_distillation
+      mode: disabled
+validation:
+  validate_ema: false
+  save_grid: false
+  seed: 20001019
+  prompt_file: projects/wan_t2v/assets/baseline_prompts_trim100.txt
+  num_frames: 81
+  height: 480
+  width: 832
+  guidance_scale: 3.0
+  fps: 16
+  nrow: 4
+  crf: 18
+
+engine:
+  training_steps: 0
+  ga_steps: 4
+  seed: 20001019
+  log_interval: 5
+  save_interval: 50
+  save_start_step: 0
+  save_before_train: false
+  val_before_train: true
+  val_start_step: 0
+  val_interval: 0
+  resume: never
+  clip_grad_norm: 1000.0
+  fake_update_interval: 1
+  gen_update_interval: 2
+  fake_step_models: [fake_model]
+  gen_step_models: [backbone]
+
+diffusion:
+  fake_training_timesteps:
+    module: common.diffusion.timestep.training.uniform
+    class_name: UniformTrainingTimesteps
+    args:
+      T: 1000
+      shift: 5.0
+      scaling_max: 0.98
+      scaling_min: 0.02
+  sampling_timesteps:
+    module: common.diffusion.timestep.sampling.trailing
+    class_name: TrailingSamplingTimesteps
+    args:
+      T: 1000
+      num_sampling_steps: 4
+      shift: 5.0
+  score_timesteps:
+    module: common.diffusion.timestep.training.uniform
+    class_name: UniformTrainingTimesteps
+    args:
+      T: 1000
+      shift: 5.0
+      scaling_max: 0.98
+      scaling_min: 0.02
+  schedule:
+    module: common.diffusion.schedule.lerp
+    class_name: LinearInterpolationSchedule
+    args:
+      T: 1000
+      pred_type: v_lerp
+  sampler:
+    module: common.diffusion.sampler.consistency
+    class_name: ConsistencySampler
+    args: {}
+  fake_schedule:
+    module: common.diffusion.schedule.lerp
+    class_name: LinearInterpolationSchedule
+    args:
+      T: 1000
+      pred_type: v_lerp
+  tea_schedule:
+    module: common.diffusion.schedule.lerp
+    class_name: LinearInterpolationSchedule
+    args:
+      T: 1000
+      pred_type: v_lerp
+
+persistence:
+  proj_name: distribution_matching_distillation
+  output_dir: runs/
+  checkpoint:
+    async: false
+    keep_latest_k: 5
+
+data:
+  module: projects.wan_t2v.data.causal_text_only
+  class_name: CausalTextOnlyDataset
+  num_workers: 2
+  prefetch_factor: 2
+  pin_memory: true
+  args:
+    paths:
+      - /root/models/gdhe17/Self-Forcing/vidprom_filtered_extended.txt
+    max_seqlen: 32768
+    max_retries: 5
+    sync_group_size: 1
+    max_seqlen_per_sample: 32768
+    height: 480
+    width: 832
+    num_frames: 81
+    chunk_size: 3
+    independent_first_chunk: 3
+    sink: 0
+    window_size: null
+    separated_first_frame: true
+    patch_size: [1, 2, 2]
+    vae_stride: [4, 8, 8]
+    z_dim: 16
+    video_shape_only: true
+
+meta_model:
+  module: projects.wan_t2v.meta_models.causal_wan_t2v_dmd
+  class_name: CausalWanT2VDMD
+  dummy_latents: true
+  guidance_min: 3.0
+  guidance_max: 3.0
+  default_neg_prompt: "slow motion, time dilation, 高帧率，色调艳丽，过曝，静态，细节模糊不清，字幕，风格，作品，画作，画面，静止，整体发灰，最差质量，低质量，JPEG压缩残留，丑陋的，残缺的，多余的手指，画得不好的手部，画得不好的脸部，畸形的，毁容的，形态畸形的肢体，手指融合，静止不动的画面，杂乱的背景，三条腿，背景人很多，倒着走"
+  chunk_wise_weighting:
+    dmd_losses: -1.0
+  fake_input: renoise
+  gen_input: trajectory
+  fake_grad_enabled: false
+  real_grad_enabled: false
+  fake_loss_type: v_lerp
+  dmd_loss:
+    type: dmd
+    norm_clip_min: 1.0e-5
+
+models:
+  backbone:
+    module: projects.wan_t2v.modeling.causal_model
+    class_name: CausalWanModel
+    meta_init: true
+    args:
+      __inherit__: projects/wan_t2v/configs/wan2_1_1_3B/causal_dit_t2v.yaml
+      guidance_embeds: false
+    weight:
+      path: /root/Hyper-Diffusion/runs/CausalWan2_1_T2V_GenerateT2V/raven_validate_save/cmgrpo_raven_merge.pt
+    runtime:
+      training: true
+      requires_grad: true
+      param_dtype: bfloat16
+      plugins:
+        - module: common.plugin.gradient_checkpointing
+          class_name: NativeGradientCheckpointing
+        - module: common.plugin.autocast
+          class_name: AutocastNoGradWrapper
+          grad_enabled: true
+          autocast:
+            enabled: true
+            dtype: bfloat16
+    placement:
+      weight_dtype: float32
+      fsdp:
+        wrap_modules: [CausalWanAttentionBlock]
+        param_dtype: bfloat16
+        reduce_dtype: float32
+        cast_forward_inputs: false
+        cpu_offload: false
+
+  vae:
+    module: projects.wan_t2v.modeling.vae
+    class_name: WanVAE
+    meta_init: false
+    args:
+      __inherit__: projects/wan_t2v/configs/wan2_1_1_3B/vae.yaml
+    weight:
+      path: /root/models/Wan-AI/Wan2.1-T2V-1.3B/Wan2.1_VAE.pth
+    runtime:
+      training: false
+      requires_grad: false
+      param_dtype: bfloat16
+      plugins:
+        - module: common.plugin.autocast
+          class_name: AutocastNoGradWrapper
+          functions: [encode, decode]
+          grad_enabled: false
+          autocast:
+            enabled: true
+            dtype: bfloat16
+    placement:
+      weight_dtype: float32
+
+  tokenizer:
+    module: projects.wan_t2v.modeling.tokenizers
+    class_name: HuggingfaceTokenizer
+    instantiate:
+      module: common.model.instantiate
+      class_name: FromPretrainedInstantiate
+    args:
+      __inherit__: projects/wan_t2v/configs/wan2_1_1_3B/tokenizer.yaml
+      pretrained_model_name_or_path: /root/models/Wan-AI/Wan2.1-T2V-1.3B/google/umt5-xxl
+    runtime:
+      training: false
+      requires_grad: false
+    placement:
+      device: cpu
+
+  text_encoder:
+    module: projects.wan_t2v.modeling.t5
+    class_name: T5Encoder
+    meta_init: false
+    args:
+      __inherit__: projects/wan_t2v/configs/wan2_1_1_3B/text_encoder.yaml
+    weight:
+      path: /root/models/Wan-AI/Wan2.1-T2V-1.3B/models_t5_umt5-xxl-enc-bf16.pth
+      assign: true
+    runtime:
+      training: false
+      requires_grad: false
+      param_dtype: bfloat16
+    placement:
+      weight_dtype: bfloat16
+      fsdp:
+        wrap_modules: [T5SelfAttention]
+        param_dtype: bfloat16
+        reduce_dtype: float32
+        cpu_offload: false
