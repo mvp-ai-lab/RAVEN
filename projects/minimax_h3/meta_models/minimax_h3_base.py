@@ -1,50 +1,27 @@
-"""Bidirectional multi-step sampling for MiniMax-H3: the released checkpoint,
-in this framework, with no training logic attached.
+"""MiniMaxH3Base: bidirectional multi-step inference with the released MiniMax-H3 checkpoint.
 
-``MiniMaxH3Base`` subclasses ``CausalMiniMaxH3DMD`` to reuse the shared
-primitives -- packed layout derivation (``_build_inputs``), text encoding
+Sampling is the global, non-causal loop: every step is one full-sequence dense
+forward over ``[text | all audio | all video]``. There is no cache, no chunk loop
+and no clean/noise cache roles -- causality is a generation-time constraint of the
+*student*, not of the released bidirectional model. No training logic is attached.
+
+The class subclasses ``CausalMiniMaxH3DMD`` purely to reuse the shared primitives
+-- packed layout derivation (``_build_inputs``), text encoding
 (``_encode_prompts``), the dense bidirectional forward (``_bidirectional_forward``,
-the very call the DMD critics/teacher use), VAE decoding (``_decode_latents``)
+the very call the DMD critics and teacher use), VAE decoding (``_decode_latents``)
 and the validation bookkeeping (``_validation_*``, resume, collective split,
-mp4/grid logging). It deliberately does NOT call the parent ``__init__``: the
-DMD constructor asserts training knobs (``fake_loss_type``, ``dmd_loss``, ...)
+mp4/grid logging). It deliberately does NOT call the parent ``__init__``, because
+the DMD constructor asserts training knobs (``fake_loss_type``, ``dmd_loss``, ...)
 that an inference config has no business carrying.
 
-Sampling is the global, non-causal loop: every step is one full-sequence
-dense forward over ``[text | all audio | all video]``. There is no NaiveCache,
-no chunk loop and no clean/noise cache roles -- causality is a generation-time
-constraint of the *student*, not of the bidirectional model. This is exactly
-what ``_bidirectional_forward`` already implements.
-
-The sampling grid is the trial's own: ``diffusion.sampling_timesteps`` and
-``diffusion.audio_sampling_timesteps`` (same step count, video ``shift`` and
-audio ``shift`` of the released pipeline -- the official serving config is 50
-steps with video flow_shift 12.0 and audio flow_shift 3.0). There is no CFG:
-H3's released checkpoint is guidance-distilled, one positive denoise branch.
-
-An inference trial needs only the sampling-side config::
-
-    diffusion:
-      sampling_timesteps:      # video grid (e.g. trailing, 50 steps, shift 12.0)
-      audio_sampling_timesteps:# audio grid (same steps, shift 3.0)
-      schedule:                # lerp, T 1.0, pred_type x_0
-      sampler:                 # euler eta=0
-
-    models:
-      backbone:      bidirectional MiniMaxH3X0DiT + MiniMaxH3WeightLoader
-      text_encoder:  MiniMaxH3TextEncoder
-      video_vae:     MiniMaxH3VideoVAE
-      audio_vae:     MiniMaxH3AudioVAE
-
-    validation:
-      prompts / prompt_path, num_frames, height, width, fps, seed, ...
-
-    data:            # only the dataset class is instantiated, as the packer
-      module/class_name/args (tokenizer_path, height, width, num_frames, ...)
-
-The first consumer is FVD reference generation: fix prompts and seeds, sample
-with the bidirectional model, extract I3D/VideoMAE features offline. The same
-meta model doubles as the student's standalone evaluation entry.
+An inference trial therefore needs only the sampling-side config:
+``diffusion.sampling_timesteps`` and ``diffusion.audio_sampling_timesteps`` (the
+same step count, with the video and audio shifts of the released pipeline),
+``diffusion.schedule`` with ``pred_type: x_0``, ``diffusion.sampler``, the
+``backbone``/``text_encoder``/``video_vae``/``audio_vae`` model nodes, a
+``validation`` block, and a ``data`` node whose dataset class is instantiated only
+as the layout packer. There is no CFG: the released checkpoint is
+guidance-distilled, so there is a single positive denoise branch.
 """
 
 from __future__ import annotations

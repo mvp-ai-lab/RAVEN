@@ -1,81 +1,46 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Trajectory-segmented consistency distillation for chunk-causal MiniMax-H3.
+"""CausalMiniMaxH3TSCD: trajectory-segmented consistency distillation for chunk-causal MiniMax-H3.
 
-TSCD keeps Stage-1 teacher forcing: every noisy chunk is supervised against the
-corpus's real x0 history, while a frozen causal teacher supplies one adjacent
-ODE step and the causal EMA backbone supplies the self-consistency target.
-
-ctx contract (engines/tscd.py owns the calling sequence)::
-
-    prepare_inputs    inherited from CausalMiniMaxH3TF
-                      reads batch, models             writes inputs, clean_latents
-    sync_inputs       inherited from CausalMiniMaxH3TF
-                      reads batch, inputs              yields synchronized ctx copies
-    sample_segment    reads inputs, rng               writes start_timesteps,
-                      step_timesteps, boundary_timesteps, target_timesteps
-    add_noise         reads inputs, clean_latents, start_timesteps, rng
-                                                      writes noisy_latents, context_eps
-    student_forward   reads models, inputs, noisy_latents, clean_latents,
-                      context_eps, start_timesteps     writes student_pred
-    solver_step       reads models, inputs, noisy_latents, clean_latents,
-                      context_eps, start_timesteps, step_timesteps
-                                                      writes solver_xts (no-grad)
-    target_forward    reads models, inputs, solver_xts, clean_latents,
-                      context_eps, step_timesteps      writes target_pred (no-grad)
-    compute_loss      reads inputs, student_pred, target_pred, noisy_latents,
-                      solver_xts, start_timesteps, step_timesteps, target_timesteps
-                                                      writes loss
-
-Expected configuration shape::
-
-    meta_model:
-      module: projects.minimax_h3.meta_models.causal_minimax_h3_tscd
-      class_name: CausalMiniMaxH3TSCD
-      audio_loss_weight: 1.0
-      num_segments: 1      # boundary at t=0; with loss_type x_0 this is plain CD
-      loss_type: x_0
-    diffusion:                        # the CD training grid
-      sampling_timesteps: ...
-      audio_sampling_timesteps: ...
-      schedule: ...
-      sampler: ...
-      tea_schedule: ...
-      tea_sampler: ...
-    validation:                       # the rollout's own grid, usually far coarser
-      sampling_timesteps: ...
-      audio_sampling_timesteps: ...
-      sampler: ...                    # reuses diffusion.schedule; see __init__
+TSCD extends the teacher-forced ``CausalMiniMaxH3TF`` route: every noisy chunk is
+still supervised against the corpus's real x0 history, while a frozen causal
+teacher supplies one adjacent ODE step and the causal EMA backbone supplies the
+self-consistency target. ``engines/tscd.py`` calls ``prepare_inputs`` and
+``sync_inputs`` (both inherited), then ``sample_segment`` (draws
+``start_timesteps``, ``step_timesteps``, ``boundary_timesteps`` and
+``target_timesteps``), ``add_noise``, ``student_forward``, ``solver_step`` and
+``target_forward`` (both no-grad), and finally ``compute_loss``.
+``config.meta_model`` carries ``audio_loss_weight``, ``num_segments`` and
+``loss_type``; ``config.diffusion`` carries the CD training grid
+(``sampling_timesteps``, ``audio_sampling_timesteps``, ``schedule``, ``sampler``,
+``tea_schedule``, ``tea_sampler``) while ``validation`` may carry its own, usually
+far coarser, rollout grid.
 
 Video and audio share each sampled grid index but use their own shifted grids:
 H3 aligns denoising steps, not sigmas. The teacher always integrates from the
-sampled start to the adjacent grid point; the segment boundary is used only to
-draw the common comparison time. All three model forwards use the causal packed
-ABI with corpus x0 context, and independently sampled context eps remains
+sampled start to the adjacent grid point, and the segment boundary is used only
+to draw the common comparison time. All three model forwards use the causal
+packed ABI with corpus x0 context, and independently sampled context eps remains
 required because the H3 wrapper perturbs rows whose repo timestep is exactly 0.
-
-``sampling_timesteps`` MUST set ``sampling_skip_max`` to at least 1. The bound
+``sampling_timesteps`` MUST set ``sampling_skip_max`` to at least 1: the bound
 constrains the START index, but what has to stay on the grid is the ODE target
-t_{i+1}: get_timesteps_by_index returns the clean bound 0 past the end, and
-target_forward hands that straight to the EMA, where the ``repo_t == 0`` test
-would treat the chunk as context and re-noise it against the zero eps the
-packer gives noisy rows. The reference algorithm has no c_skip/c_out to make
-t' = 0 meaningful, so the last index is excluded by configuration -- the
-student never learns that final step, which is this design's real cost and a
-reason to prefer a longer grid (N = 8 forfeits 12.5%, N = 4 forfeits 25%).
+``t_{i+1}`` -- ``get_timesteps_by_index`` returns the clean bound 0 past the end,
+and ``target_forward`` would hand that to the EMA, where the ``repo_t == 0`` test
+treats the chunk as context and re-noises it against the zero eps the packer gives
+noisy rows. With no c_skip/c_out to make ``t' = 0`` meaningful, the last index is
+excluded by configuration, so the student never learns that final step -- a real
+cost, and a reason to prefer a longer grid.
 
 ``models`` needs ``backbone``, ``backbone_ema`` (the engine's EMA target) and
-``tea_model``, plus ``text_encoder`` and both VAEs once validation runs. All
-three DiT nodes wrap the CAUSAL model -- unlike DMD, where ``tea_model`` wraps
-the bidirectional one. The teacher is the Stage-1 chunk-causal checkpoint and
-is called through the same packed causal ABI as the student, so the ODE step it
-supplies is conditioned on the history the student actually sees; a
-bidirectional teacher would put x_{t'} on a trajectory the student is
-structurally unable to reach. No CFG anywhere -- H3 is guidance-distilled.
-
-Self-consistency is learned only along teacher-forced trajectories: the
-teacher's ODE step is also taken on corpus x0 history, which does not exist
-during free rollout. That is a property of this two-stage route, not a defect
--- Causal-Forcing trains the same way.
+``tea_model``, plus ``text_encoder`` and both VAEs once validation runs. All three
+DiT nodes wrap the CAUSAL model -- unlike DMD, where ``tea_model`` wraps the
+bidirectional one. The teacher is a chunk-causal checkpoint called through the
+same packed causal ABI as the student, so the ODE step it supplies is conditioned
+on the history the student actually sees; a bidirectional teacher would put
+``x_{t'}`` on a trajectory the student is structurally unable to reach. No CFG
+anywhere -- H3 is guidance-distilled. Self-consistency is learned only along
+teacher-forced trajectories, since the teacher's ODE step is also taken on corpus
+x0 history, which does not exist during free rollout; that is a property of this
+two-stage route, not a defect.
 """
 
 from __future__ import annotations

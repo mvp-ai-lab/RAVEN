@@ -1,0 +1,201 @@
+entry:
+  module: common.engine
+  class_name: BaseEngine
+
+logging:
+  plugins:
+    - module: common.plugin.wandb
+      class_name: WandbPlugin
+      mode: offline
+
+validation:
+  validate_ema: false
+  seed: 20260807
+  num_frames: 192
+  height: 768
+  width: 1376
+  fps: 24
+  nrow: 4
+  crf: 18
+  save_grid: false
+  prompts:
+    - A smooth, continuous panning shot over a scenic countryside landscape, showcasing rolling green hills, vibrant wildflowers, and winding rural roads. The camera pans slowly from left to right, capturing the serene beauty of the environment as the sun sets in the distance, casting a warm golden glow across the scene. The duration of this panning shot should be extended to 4 seconds to fully appreciate the detailed scenery and the changing light conditions. Wide shot.
+    - A mysterious Gothic castle with numerous spires and towers, viewed from a top-down perspective. The castle exudes a blend of gothic architecture and advanced technology, creating a futuristic and cinematic atmosphere. The scene lacks intricate details, focusing instead on broad shapes and forms. Light gradients and subtle visual effects enhance the ethereal and otherworldly feel. The camera rotates counterclockwise, slowly revealing the expansive and imposing structure below.
+    - A panoramic view of the Eiffel Tower at sunset, with the sky painted in shades of warm orange and soft pink hues. The tower stands majestically under the glowing sky, its intricate iron structure illuminated by the fading sunlight. The Parisian skyline in the distance adds depth to the scene, with the Seine river reflecting the vibrant colors. The camera slowly pans from the base of the tower up to the top, capturing the detailed ironwork and the bustling city life below. The scene is serene yet filled with the energy of the evening. Wide shot, capturing the entirety of the Eiffel Tower and the surrounding skyline.
+    - A logo that blends a radiant sun with majestic mountains, symbolizing the awe-inspiring beauty of divine creation. The sun is depicted as a golden orb with rays extending outward, casting a warm glow across the landscape. Behind it, towering mountain peaks rise into a clear blue sky, their rugged silhouettes framed against the horizon. The mountains are detailed with snow-capped peaks and lush greenery, adding depth and texture. The logo is designed in a clean, modern style with smooth lines and a minimalist color palette, emphasizing simplicity and elegance. The sun and mountains are centered, creating a balanced composition that captures the essence of nature's grandeur. Wide shot, static scene.
+  num_prompts: 4
+  batch_size: 1
+
+engine:
+  up_size:
+    train: 4
+    validation: 4
+
+diffusion:
+  sampling_timesteps:
+    module: common.diffusion.timestep.sampling.trailing
+    class_name: TrailingSamplingTimesteps
+    args:
+      T: 1.0
+      num_sampling_steps: 4
+      shift: 12.0
+  audio_sampling_timesteps:
+    module: common.diffusion.timestep.sampling.trailing
+    class_name: TrailingSamplingTimesteps
+    args:
+      T: 1.0
+      num_sampling_steps: 4
+      shift: 3.0
+  schedule:
+    module: common.diffusion.schedule.lerp
+    class_name: LinearInterpolationSchedule
+    args:
+      T: 1.0
+      pred_type: x_0
+  sampler:
+    module: common.diffusion.sampler.consistency
+    class_name: ConsistencySampler
+    args: {}
+
+distributed:
+  up_size: [4]
+
+persistence:
+  proj_name: causal_minimax_h3_base
+  output_dir: runs/
+
+data:
+  module: projects.minimax_h3.data.causal_text_only
+  class_name: CausalTextOnlyT2AVDataset
+  num_workers: 2
+  prefetch_factor: 2
+  pin_memory: true
+  args:
+    tokenizer_path: /root/models/MiniMax-H3/FL2VA/tokenizer
+    max_seqlen: 59464
+    max_seqlen_per_sample: 59464
+    max_retries: 5
+    sync_group_size: 1
+    height: 768
+    width: 1376
+    num_frames: 192
+    video_latent_channels: 24
+    audio_latent_channels: 32
+    spatial_vae_stride: 16
+    sink: 2
+    window_size: 2
+
+meta_model:
+  module: projects.minimax_h3.meta_models.causal_minimax_h3_base
+  class_name: CausalMiniMaxH3Base
+
+models:
+  backbone:
+    module: projects.minimax_h3.modeling.build
+    class_name: MiniMaxH3CausalX0DiTSP
+    meta_init: true
+    args:
+      __inherit__: projects/minimax_h3/configs/dit.yaml
+    weight:
+      module: projects.minimax_h3.modeling.weights
+      class_name: MiniMaxH3WeightLoader
+      path: /root/models/MiniMax-H3/FL2VA/transformer/model.safetensors.index.json
+    runtime:
+      training: false
+      requires_grad: false
+      param_dtype: bfloat16
+    placement:
+      weight_dtype: float32
+      fsdp:
+        wrap_modules: [CausalMiniMaxH3DiTBlock]
+        param_dtype: null
+        reduce_dtype: float32
+        cast_forward_inputs: false
+        shard_size: 8
+        cpu_offload: true
+    adapter:
+      r: 128
+      lora_alpha: 128
+      weight: /root/models/mvp-lab/MiniMax-H3-RAVEN-Streaming-LoRA/minimax_h3_raven_streaming_lora_4nfe_preview.safetensors
+      target_modules:
+        - qkv_proj
+        - out_proj
+        - fc1
+        - fc2
+        - linear
+        - condition_proj
+        - video_patch_proj
+        - audio_patch_proj
+        - video_out
+        - audio_out
+        - proj_in
+        - proj_out
+      custom_module_mapping:
+        - source:
+            module: projects.minimax_h3.modeling.transformer.model
+            class_name: _Linear
+          target:
+            module: projects.minimax_h3.modeling.lora
+            class_name: MiniMaxH3LoraLinear
+
+  text_encoder:
+    module: projects.minimax_h3.modeling.text_encoder
+    class_name: MiniMaxH3TextEncoder
+    instantiate:
+      module: common.model.instantiate
+      class_name: FromPretrainedInstantiate
+    args:
+      pretrained_model_name_or_path: /root/models/MiniMax-H3/FL2VA/text_encoder
+      hidden_layer: 50
+    runtime:
+      training: false
+      requires_grad: false
+      param_dtype: bfloat16
+    placement:
+      weight_dtype: bfloat16
+      fsdp:
+        wrap_modules: [Qwen3VLTextDecoderLayer, Qwen3VLVisionBlock]
+        param_dtype: bfloat16
+        reduce_dtype: float32
+        shard_size: 8
+        cpu_offload: true
+
+  video_vae:
+    module: projects.minimax_h3.modeling.build
+    class_name: MiniMaxH3VideoVAE
+    meta_init: false
+    args:
+      __inherit__: projects/minimax_h3/configs/video_vae.yaml
+    weight:
+      path: /root/models/MiniMax-H3/FL2VA/video_vae/source/model.safetensors
+    runtime:
+      training: false
+      requires_grad: false
+      param_dtype: float16
+      plugins:
+        - module: common.plugin.autocast
+          class_name: AutocastNoGradWrapper
+          functions: [decode_base]
+          grad_enabled: false
+          autocast:
+            enabled: true
+            dtype: float16
+    placement:
+      weight_dtype: float32
+
+  audio_vae:
+    module: projects.minimax_h3.modeling.build
+    class_name: MiniMaxH3AudioVAE
+    meta_init: false
+    args:
+      __inherit__: projects/minimax_h3/configs/audio_vae.yaml
+    weight:
+      module: projects.minimax_h3.modeling.weights
+      class_name: MiniMaxH3AudioVAEWeightLoader
+      path: /root/models/MiniMax-H3/audio_vae/diffusion_pytorch_model.safetensors
+    runtime:
+      training: false
+      requires_grad: false
+      param_dtype: float32
+    placement:
+      weight_dtype: float32

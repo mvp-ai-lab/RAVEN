@@ -1,39 +1,32 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Teacher forcing a chunk-causal MiniMax-H3 T2AV fit onto a corpus of x0.
+"""CausalMiniMaxH3TF: teacher-forced causal fitting of MiniMax-H3 onto a corpus of x0.
 
-Every chunk carries a noisy copy and, except for the last, a clean one; the
-mask lets a noisy chunk see only earlier clean copies, never its own. So one
-packed forward supervises all of a sample's chunks at once, each an independent
-"denoise this chunk given clean history" task -- which is why timesteps are
-drawn per chunk rather than per sample.
+Every chunk carries a noisy copy and, except for the last, a clean one; the mask
+lets a noisy chunk see only earlier clean copies, never its own. One packed
+forward therefore supervises all of a sample's chunks at once, each an
+independent "denoise this chunk given clean history" task -- which is why
+timesteps are drawn per chunk rather than per sample. The class extends
+``CausalMiniMaxH3Base`` and inherits its packing, rollout and validation
+unchanged.
 
-ctx contract (engines/diffusion_finetuning.py owns the calling sequence)::
-
-    prepare_inputs    reads batch, models   writes inputs, clean_latents
-    sync_inputs       reads batch, inputs   yields synchronized ctx copies
-    sample_timesteps  reads inputs, rng     writes train_timesteps (per chunk)
-    add_noise         reads inputs, clean_latents, train_timesteps, rng
-                                            writes noisy_latents, context_eps
-    forward           reads models, inputs, noisy_latents, clean_latents,
-                      context_eps, train_timesteps          writes pred
-    compute_loss      reads pred, clean_latents, inputs     writes loss
-
-``diffusion`` supplies five components: ``training_timesteps`` for the per-chunk
-draw, ``schedule`` for both add_noise and the sampler it is injected into, and
-``sampling_timesteps``, ``audio_sampling_timesteps`` and ``sampler`` for the
-inherited validation rollout.
+The ctx primitives, called by ``engines/diffusion_finetuning.py`` in this order,
+are ``prepare_inputs`` (writes ``inputs`` and ``clean_latents``), ``sync_inputs``,
+``sample_timesteps`` (a per-chunk draw into ``train_timesteps``), ``add_noise``
+(writes ``noisy_latents`` and ``context_eps``), ``forward`` (writes ``pred``) and
+``compute_loss``. ``config.diffusion`` supplies five components:
+``training_timesteps`` for the per-chunk draw, ``schedule`` for both ``add_noise``
+and the sampler it is injected into, and ``sampling_timesteps``,
+``audio_sampling_timesteps`` and ``sampler`` for the inherited validation rollout.
 
 ``training_timesteps`` must be one of the paired classes in
-``projects/minimax_h3/modeling/training_timesteps.py``: it carries both shifts
-and returns the (video, audio) pair from a single draw, so there is no separate
-``audio_training_timesteps`` node here. The two shifts are the same 12 and 3 the
-sampling grids use, because the pair has to sit on the (sigma_v, sigma_a) curve
-the corpus was sampled along.
-
-``models`` needs ``backbone`` and ``text_encoder``, plus ``video_vae`` and
-``audio_vae`` once validation runs. No fake_model, no tea_model. ``data`` must
-be the latent corpus dataset: the inherited validation instantiates
-``config.data.class_name`` again as its layout packer.
+``projects/minimax_h3/modeling/training_timesteps.py``: it carries both shifts and
+returns the (video, audio) pair from a single draw, so there is no separate
+``audio_training_timesteps`` node. The two shifts must be the ones the sampling
+grids use, because the pair has to sit on the ``(sigma_v, sigma_a)`` curve the
+corpus was sampled along. ``models`` needs ``backbone`` and ``text_encoder``, plus
+``video_vae`` and ``audio_vae`` once validation runs -- no fake model and no
+teacher -- and ``data`` must be the latent corpus dataset, since the inherited
+validation instantiates ``config.data.class_name`` again as its layout packer.
 """
 
 from __future__ import annotations

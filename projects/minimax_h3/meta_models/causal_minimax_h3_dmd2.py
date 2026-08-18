@@ -1,5 +1,26 @@
 # SPDX-License-Identifier: Apache-2.0
-"""DMD2 adversarial training for chunk-causal MiniMax-H3."""
+"""CausalMiniMaxH3DMD2: an adversarial extension of chunk-causal MiniMax-H3 DMD.
+
+``CausalMiniMaxH3DMD2`` subclasses ``CausalMiniMaxH3DMD`` and keeps every ctx
+primitive of the DMD contract intact; it only adds a GAN term on top. A
+discriminator is tapped off the bidirectional ``fake_model``, which therefore
+plays two roles at once -- DMD's fake score model and the critic -- so
+``gen_model_context`` freezes it (and its taps) while still letting gradients
+flow back to the generator's inputs. ``rollout``, ``prepare_fake``, ``fake_loss``
+and ``gen_loss`` are the overridden hooks: the first two stage the real/fake
+discriminator inputs, and the last two add the non-saturating softplus terms,
+scaled by ``gan_lambda_disc`` on the critic side and ``gan_lambda_gen`` on the
+generator side.
+
+Configuration lives in ``config.meta_model`` (``gan_lambda_disc``,
+``gan_lambda_gen``, ``gan_disc_clean_input``, ``gan_r1_lambda``, ``gan_r1_sigma``
+and ``fake_use_trajectory``) plus one extra ``config.diffusion`` node,
+``gan_training_timesteps``, whose ``T`` must match ``fake_schedule.T``. By default
+the discriminator sees corrupted ``x_t``; with ``gan_disc_clean_input`` it sees
+clean ``x`` under a pretended random timestep. ``gan_r1_lambda`` enables an
+approximate R1 penalty computed from a perturbed real batch rather than a true
+double backward, which is unavailable under FSDP with FlashAttention.
+"""
 
 from __future__ import annotations
 
