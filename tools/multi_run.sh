@@ -2,7 +2,7 @@
 set -exo pipefail
 
 eval "$(conda shell.bash hook)"
-export CONDA_ENV="${CONDA_ENV:-base}"
+export CONDA_ENV="${CONDA_ENV:-raven}"
 conda activate "$CONDA_ENV"
 source "venv/bin/activate"
 
