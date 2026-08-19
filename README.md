@@ -15,11 +15,11 @@ Project page: <https://yanzuo.lu/raven>
 
 | Models | Checkpoints | Description |
 | --- | --- | --- |
-| MiniMax-H3-RAVEN-Streaming-LoRA-4NFE-Preview | 🤗 [HuggingFace](https://huggingface.co/mvp-lab/MiniMax-H3-RAVEN-Streaming-LoRA/blob/main/minimax_h3_raven_streaming_lora_4nfe_preview.safetensors) | Initial 4-NFE streaming LoRA preview. It remains undertrained and has limited texture detail. |
-| Wan2.1-T2V-1.3B-RAVEN | 🤗 [HuggingFace](https://huggingface.co/mvp-lab/RAVEN/blob/main/raven_model.pt) | RAVEN backbone after distillation and before CM-GRPO. |
-| Wan2.1-T2V-1.3B-CMGRPO-LoRA | 🤗 [HuggingFace](https://huggingface.co/mvp-lab/RAVEN/blob/main/cmgrpo_raven_lora.safetensors) | CM-GRPO adapter only. Load it on top of Wan2.1-T2V-1.3B-RAVEN. |
-| Wan2.1-T2V-1.3B-CMGRPO-Merge | 🤗 [HuggingFace](https://huggingface.co/mvp-lab/RAVEN/blob/main/cmgrpo_raven_merge.pt) | Full CM-GRPO backbone with the adapter merged. |
-| Wan2.1-T2V-1.3B-CMGRPO-Full | 🤗 [HuggingFace](https://huggingface.co/mvp-lab/RAVEN/blob/main/cmgrpo_raven_full.pt) | PEFT-wrapped base-and-adapter bundle for archival interchange. Convert or merge it before use with the current code. |
+| MiniMax-H3-RAVEN-Streaming-LoRA-4NFE-Preview | [🤗&nbsp;HuggingFace](https://huggingface.co/mvp-lab/MiniMax-H3-RAVEN-Streaming-LoRA/blob/main/minimax_h3_raven_streaming_lora_4nfe_preview.safetensors) | Initial 4-NFE streaming LoRA preview. It remains undertrained and has limited texture detail. |
+| Wan2.1-T2V-1.3B-RAVEN | [🤗&nbsp;HuggingFace](https://huggingface.co/mvp-lab/RAVEN/blob/main/raven_model.pt) | RAVEN backbone after distillation and before CM-GRPO. |
+| Wan2.1-T2V-1.3B-CMGRPO-LoRA | [🤗&nbsp;HuggingFace](https://huggingface.co/mvp-lab/RAVEN/blob/main/cmgrpo_raven_lora.safetensors) | CM-GRPO adapter only. Load it on top of Wan2.1-T2V-1.3B-RAVEN. |
+| Wan2.1-T2V-1.3B-CMGRPO-Merge | [🤗&nbsp;HuggingFace](https://huggingface.co/mvp-lab/RAVEN/blob/main/cmgrpo_raven_merge.pt) | Full CM-GRPO backbone with the adapter merged. |
+| Wan2.1-T2V-1.3B-CMGRPO-Full | [🤗&nbsp;HuggingFace](https://huggingface.co/mvp-lab/RAVEN/blob/main/cmgrpo_raven_full.pt) | PEFT-wrapped base-and-adapter bundle for archival interchange. Convert or merge it before use with the current code. |
 
 ## Demo
 
