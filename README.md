@@ -4,12 +4,13 @@
 
 Project page: <https://yanzuo.lu/raven>
 
-[![arXiv](https://img.shields.io/badge/arXiv-2605.15190-b31b1b.svg)](https://arxiv.org/abs/2605.15190) [![Hugging Face](https://img.shields.io/badge/Hugging%20Face-mvp--lab%2FRAVEN-FFD21E)](https://huggingface.co/collections/mvp-lab/raven) [![Papers with Code: #2 on VBench](https://paperswithcode.co/api/v1/papers/2605.15190/leaderboard-badge.svg?eval=23202&live=1)](https://paperswithcode.co/api/v1/papers/2605.15190/leaderboard-badge-link?eval=23202)
+[![arXiv](https://img.shields.io/badge/arXiv-2605.15190-b31b1b.svg)](https://arxiv.org/abs/2605.15190) [![Hugging Face](https://img.shields.io/badge/Hugging%20Face-mvp--lab%2FRAVEN-FFD21E)](https://huggingface.co/collections/mvp-lab/raven)
 
 ## News
 
-- **August 20, 2026.**  We’ve released [ComfyUI nodes](https://github.com/YanzuoLu/ComfyUI-MiniMax-H3-RAVEN-Streaming) for RAVEN streaming generation on MiniMax-H3, enabling 192-frame 1376×768 T2VA generation within a 24 GiB VRAM envelope. This path still places a substantial demand on system RAM, and further memory optimizations are on the way.
-- **August 19, 2026.** We released the MiniMax-H3 training code and initial [4-NFE preview LoRA weights](https://huggingface.co/mvp-lab/MiniMax-H3-RAVEN-Streaming-LoRA). This first preview is still undertrained and its texture details remain limited, but it establishes the complete end-to-end training pipeline for streaming generation on MiniMax-H3. More to come.
+- **Sep 24, 2026.** Our paper is accepted by NeurIPS 2026. See you in Sydney!
+- **Aug 20, 2026.** We’ve released [ComfyUI nodes](https://github.com/YanzuoLu/ComfyUI-MiniMax-H3-RAVEN-Streaming) for RAVEN streaming generation on MiniMax-H3, enabling 192-frame 1376×768 T2VA generation within a 24 GiB VRAM envelope. This path still places a substantial demand on system RAM, and further memory optimizations are on the way.
+- **Aug 19, 2026.** We released the MiniMax-H3 training code and initial [4-NFE preview LoRA weights](https://huggingface.co/mvp-lab/MiniMax-H3-RAVEN-Streaming-LoRA). This first preview is still undertrained and its texture details remain limited, but it establishes the complete end-to-end training pipeline for streaming generation on MiniMax-H3. More to come.
 - **May 14, 2026.** We made the initial commit and released the [paper](https://arxiv.org/abs/2605.15190), code, and [weights](https://huggingface.co/mvp-lab/RAVEN). The initial implementation and released weights were validated on Wan2.1-T2V-1.3B.
 
 ## Releases
