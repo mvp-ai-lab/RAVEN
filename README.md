@@ -8,6 +8,7 @@ Project page: <https://yanzuo.lu/raven>
 
 ## News
 
+- **Oct 12, 2026.** Please check our latest approach for streaming H3 here for more information: https://nvlabs.github.io/Sana/Sol-Engine/StreamRender-H3/ , which is more practical and yielding more promising results than current ones. 
 - **Sep 24, 2026.** Our paper is accepted by NeurIPS 2026. See you in Sydney!
 - **Aug 20, 2026.** We’ve released [ComfyUI nodes](https://github.com/YanzuoLu/ComfyUI-MiniMax-H3-RAVEN-Streaming) for RAVEN streaming generation on MiniMax-H3, enabling 192-frame 1376×768 T2VA generation within a 24 GiB VRAM envelope. This path still places a substantial demand on system RAM, and further memory optimizations are on the way.
 - **Aug 19, 2026.** We released the MiniMax-H3 training code and initial [4-NFE preview LoRA weights](https://huggingface.co/mvp-lab/MiniMax-H3-RAVEN-Streaming-LoRA). This first preview is still undertrained and its texture details remain limited, but it establishes the complete end-to-end training pipeline for streaming generation on MiniMax-H3. More to come.
